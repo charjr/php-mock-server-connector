@@ -43,4 +43,16 @@ class MockServerExpectation
             $responseBody ?? '',
         );
     }
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'times' => [
+                'remainingTimes' => $this->atMost,
+            ],
+            'httpRequest' => $this->requestMatcher->jsonSerialize(),
+            'httpResponse' => $this->action->jsonSerialize(),
+        ];
+    }
+
 }

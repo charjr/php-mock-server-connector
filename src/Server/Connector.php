@@ -9,7 +9,6 @@ use Nivseb\PhpMockServerConnector\Exception\FailCreateExpectationException;
 use Nivseb\PhpMockServerConnector\Exception\FailResetMockServerException;
 use Nivseb\PhpMockServerConnector\Exception\UnsuccessfulVerificationException;
 use Nivseb\PhpMockServerConnector\Exception\VerificationFailException;
-use Nivseb\PhpMockServerConnector\Expectation\ExpectationBuilder;
 use Nivseb\PhpMockServerConnector\Expectation\RemoteExpectation;
 use Nivseb\PhpMockServerConnector\Structs\MockServerExpectation;
 use Psr\Http\Message\ResponseInterface;
@@ -47,7 +46,7 @@ class Connector
             $response = $this->client->put(
                 '/mockserver/expectation',
                 [
-                    'json' => ExpectationBuilder::buildMockServerExpectation($expectation),
+                    'json' => $expectation->jsonSerialize(),
                 ]
             );
             if ($response->getStatusCode() !== 201) {
