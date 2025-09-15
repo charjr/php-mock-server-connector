@@ -12,32 +12,9 @@ class ExpectationBuilder
             'times' => [
                 'remainingTimes' => $expectation->atMost,
             ],
-            'httpRequest'  => static::buildRequestForMockServerExpectation($expectation),
+            'httpRequest'  => $expectation->requestMatcher->jsonSerialize(),
             'httpResponse' => static::buildResponseForMockServerExpectation($expectation),
         ];
-    }
-
-    protected static function buildRequestForMockServerExpectation(MockServerExpectation $expectation): array
-    {
-        $request = [
-            'method' => $expectation->method,
-            'path'   => $expectation->url,
-        ];
-
-        if ($expectation->pathParameters) {
-            $request['pathParameters'] = static::buildPropertyMatcher($expectation->pathParameters);
-        }
-        if ($expectation->queryParameters) {
-            $request['queryStringParameters'] = static::buildPropertyMatcher($expectation->queryParameters);
-        }
-        if ($expectation->requestHeaders) {
-            $request['headers'] = static::buildPropertyMatcher($expectation->requestHeaders);
-        }
-        if ($expectation->requestBody) {
-            $request['body'] = $expectation->requestBody;
-        }
-
-        return $request;
     }
 
     /**
