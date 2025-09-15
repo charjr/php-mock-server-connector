@@ -2,24 +2,65 @@
 
 namespace Nivseb\PhpMockServerConnector\Structs;
 
-class MockServerExpectation
+final class MockServerExpectation implements \JsonSerializable
 {
+    /** @var RequestMatcher\Properties */
+    public RequestMatcher $requestMatcher;
+    public Action\Response $action;
+
     /**
-     * @param array<string, array|bool|float|int|string> $pathParameters
-     * @param array<string, array|bool|float|int|string> $queryParameters
-     * @param array<string, array|bool|float|int|string> $requestHeaders
+     * @param array<string, array|scalar> $pathParameters
+     * @param array<string, array|scalar> $queryParameters
+     * @param array<string, array|scalar> $requestHeaders
      */
     public function __construct(
-        public readonly string $method,
-        public readonly string $url,
-        public int $responseStatusCode = 200,
-        public null|array|string $responseBody = null,
-        public ?array $responseHeaders = null,
+        string $method,
+        string $url,
+        int $responseStatusCode = 200,
+        null|array|string $responseBody = null,
+        ?array $responseHeaders = null,
         public int $atLeast = 1,
         public int $atMost = 1,
-        public ?array $pathParameters = null,
-        public ?array $queryParameters = null,
-        public ?array $requestHeaders = null,
-        public null|array|string $requestBody = null,
-    ) {}
+        ?array $pathParameters = null,
+        ?array $queryParameters = null,
+        ?array $requestHeaders = null,
+        null|array|string $requestBody = null,
+    ) {
+        $this->requestMatcher = new RequestMatcher\Properties(
+            $method,
+            $url,
+            $pathParameters ?? [],
+            $queryParameters ?? [],
+            $requestHeaders ?? [],
+            [], //@TODO support cookies
+            $requestBody ?? '',
+        );
+
+        $this->action = new Action\Response(
+            $responseStatusCode,
+            '', //@TODO support reasonPhrase
+            $responseHeaders ?? [],
+            [], //@TODO support cookies
+            $responseBody ?? '',
+        );
+    }
+
+    /**
+     * @return array{
+     *     times: array{atLeast:int, atMost:int},
+     *     httpRequest: array{string, array|scalar},
+     *     httpResponse: array{string, array|scalar},
+     * }
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'times' => [
+                'atLeast' => $this->atLeast,
+                'atMost'  => $this->atMost,
+            ],
+            'httpRequest'  => $this->requestMatcher->jsonSerialize(),
+            'httpResponse' => $this->action->jsonSerialize(),
+        ];
+    }
 }

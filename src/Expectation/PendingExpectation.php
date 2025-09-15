@@ -51,15 +51,15 @@ class PendingExpectation
      *
      * @throws AlreadyExpectedExpectationException
      */
-    public function andReturn(int $statusCode, null|array|string $responseBody = null, ?array $headers = null): static
+    public function andReturn(int $statusCode, array|string $responseBody = '', array $headers = []): static
     {
         if ($this->remoteExpectation) {
             throw new AlreadyExpectedExpectationException($this->remoteExpectation);
         }
 
-        $this->expectation->responseStatusCode = $statusCode;
-        $this->expectation->responseBody       = $responseBody;
-        $this->expectation->responseHeaders    = $headers;
+        $this->expectation->action->statusCode = $statusCode;
+        $this->expectation->action->body       = $responseBody;
+        $this->expectation->action->headers    = $headers;
 
         return $this;
     }
@@ -75,7 +75,7 @@ class PendingExpectation
             throw new AlreadyExpectedExpectationException($this->remoteExpectation);
         }
 
-        $this->expectation->pathParameters = $parameters;
+        $this->expectation->requestMatcher->pathParameters = $parameters;
 
         return $this;
     }
@@ -91,7 +91,7 @@ class PendingExpectation
             throw new AlreadyExpectedExpectationException($this->remoteExpectation);
         }
 
-        $this->expectation->queryParameters = $parameters;
+        $this->expectation->requestMatcher->queryStringParameters = $parameters;
 
         return $this;
     }
@@ -105,7 +105,7 @@ class PendingExpectation
             throw new AlreadyExpectedExpectationException($this->remoteExpectation);
         }
 
-        $this->expectation->requestBody = $body;
+        $this->expectation->requestMatcher->body = $body;
 
         return $this;
     }
@@ -121,7 +121,7 @@ class PendingExpectation
             throw new AlreadyExpectedExpectationException($this->remoteExpectation);
         }
 
-        $this->expectation->requestHeaders = $headers;
+        $this->expectation->requestMatcher->headers = $headers;
 
         return $this;
     }
