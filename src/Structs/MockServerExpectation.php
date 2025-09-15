@@ -5,6 +5,7 @@ namespace Nivseb\PhpMockServerConnector\Structs;
 class MockServerExpectation
 {
     public readonly RequestMatcher $requestMatcher;
+    public readonly Action $action;
 
     /**
      * @param array<string, array|bool|float|int|string> $pathParameters
@@ -33,6 +34,13 @@ class MockServerExpectation
             [], //@TODO support cookies
             $requestBody ?? '',
         );
+
+        $this->action = new Action\Response(
+            $responseStatusCode,
+            '', //@TODO support reasonPhrase
+            $responseHeaders ?? [],
+            [], //@TODO support cookies
+            $responseBody ?? '',
         );
     }
 }
