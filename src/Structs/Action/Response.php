@@ -4,17 +4,47 @@ declare(strict_types=1);
 
 namespace Nivseb\PhpMockServerConnector\Structs\Action;
 
-use Nivseb\PhpMockServerConnector\Structs\Action;
-
-final readonly class Response implements Action
+final class Response implements \Nivseb\PhpMockServerConnector\Structs\Action
 {
     public function __construct(
-        private int|string $statusCode = '',
+        private int|string $statusCode = 200,
         private string $reasonPhrase = '',
         private array $headers = [],
         private array $cookies = [],
         private array|string $body = '',
     ) {}
+
+    public function withStatusCode(int|string $code): self
+    {
+        $this->statusCode = $code;
+        return $this;
+    }
+
+    public function withReasonPhrase(string $phrase): self
+    {
+        $this->reasonPhrase = $phrase;
+        return $this;
+    }
+
+    /** @param array<string, scalar> $headers */
+    public function withHeaders(array $headers): self
+    {
+        $this->headers = $headers;
+        return $this;
+    }
+
+    /** @param array<string, scalar> $cookies */
+    public function withCookies(array $cookies): self
+    {
+        $this->cookies = $cookies;
+        return $this;
+    }
+
+    public function withBody(array|string $body): self
+    {
+        $this->body = $body;
+        return $this;
+    }
 
     /**
      * @return array{
