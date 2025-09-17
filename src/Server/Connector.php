@@ -10,6 +10,7 @@ use Nivseb\PhpMockServerConnector\Exception\FailResetMockServerException;
 use Nivseb\PhpMockServerConnector\Exception\UnsuccessfulVerificationException;
 use Nivseb\PhpMockServerConnector\Exception\VerificationFailException;
 use Nivseb\PhpMockServerConnector\Expectation\RemoteExpectation;
+use Nivseb\PhpMockServerConnector\Structs\Expectation;
 use Nivseb\PhpMockServerConnector\Structs\MockServerExpectation;
 use Psr\Http\Message\ResponseInterface;
 
@@ -40,7 +41,7 @@ class Connector
     /**
      * @throws FailCreateExpectationException
      */
-    public function applyExpectation(MockServerExpectation $expectation): RemoteExpectation
+    public function applyExpectation(MockServerExpectation|Expectation $expectation): RemoteExpectation
     {
         try {
             $response = $this->client->put(
