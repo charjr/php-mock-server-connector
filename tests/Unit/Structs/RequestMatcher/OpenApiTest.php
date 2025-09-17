@@ -15,14 +15,13 @@ it(
 
 dataset('serialise: open api request matcher', [
     ...array_map(fn ($d) => array_fill(0, 2, $d), [
-        'specUrlOrPayload: file' => ['specUrlOrPayload' => 'file:/api'],
-        'specUrlOrPayload: url'  => ['specUrlOrPayload' => 'http://petstore.swagger.io/v1/api']
-    ]),
-
-    ...array_map(fn ($d) => array_fill(0, 2, $d), [
-        'operationId: getPets' => [
+        'specUrlOrPayload: file' => [
             'specUrlOrPayload' => 'file:/api',
-            'operationId' => 'getPets'
+            'operationId' => 'listPets',
         ],
+        'specUrlOrPayload: url'  => [
+            'specUrlOrPayload' => 'http://petstore.swagger.io/v1/api',
+            'operationId' => 'showPetById'
+        ]
     ]),
 ]);
