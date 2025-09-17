@@ -4,8 +4,8 @@ namespace Nivseb\PhpMockServerConnector\Structs;
 
 class MockServerExpectation
 {
-    public readonly RequestMatcher $requestMatcher;
-    public readonly Action $action;
+    public RequestMatcher\Properties $requestMatcher;
+    public Action\Response $action;
 
     /**
      * @param array<string, array|bool|float|int|string> $pathParameters
@@ -15,9 +15,9 @@ class MockServerExpectation
     public function __construct(
         string $method,
         string $url,
-        public int $responseStatusCode = 200,
-        public null|array|string $responseBody = null,
-        public ?array $responseHeaders = null,
+        int $responseStatusCode = 200,
+        null|array|string $responseBody = null,
+        ?array $responseHeaders = null,
         public int $atLeast = 1,
         public int $atMost = 1,
         ?array $pathParameters = null,
