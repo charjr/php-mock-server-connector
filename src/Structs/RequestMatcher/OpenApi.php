@@ -9,9 +9,10 @@ use Nivseb\PhpMockServerConnector\Structs\RequestMatcher;
 final readonly class OpenApi implements RequestMatcher
 {
     public function __construct(
-        public readonly string $specUrlOrPayload,
-        public readonly ?string $operationId = null,
+        public string $specUrlOrPayload,
+        public string $operationId,
     ) {}
+
 
     /**
      * @return array{
@@ -21,13 +22,9 @@ final readonly class OpenApi implements RequestMatcher
      */
     public function jsonSerialize(): mixed
     {
-        return array_filter(
-            [
+        return [
                 'specUrlOrPayload' => $this->specUrlOrPayload,
                 'operationId' => $this->operationId,
-            ],
-            fn ($v) => $v !== null,
-        );
+        ];
     }
-
 }
