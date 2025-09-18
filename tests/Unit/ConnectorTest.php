@@ -8,14 +8,17 @@ use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
-use Mockery\Expectation;
 use Mockery\MockInterface;
 use Nivseb\PhpMockServerConnector\Exception\FailResetMockServerException;
 use Nivseb\PhpMockServerConnector\Exception\UnsuccessfulVerificationException;
 use Nivseb\PhpMockServerConnector\Exception\VerificationFailException;
-use Nivseb\PhpMockServerConnector\Expectation\RemoteExpectation;
 use Nivseb\PhpMockServerConnector\Server\Connector;
+use Nivseb\PhpMockServerConnector\Structs\Expectation;
+use Nivseb\PhpMockServerConnector\Structs\RequestMatcher;
+use Nivseb\PhpMockServerConnector\Structs\Action;
 use Nivseb\PhpMockServerConnector\Structs\MockServerExpectation;
+
+use Nivseb\PhpMockServerConnector\Structs\Times;
 
 use function Pest\Faker\fake;
 
@@ -112,32 +115,21 @@ it(
         $clientMock        = Mockery::mock(Client::class);
         $testConnector     = new Connector($clientMock);
 
-        $remoteExpectation = new RemoteExpectation(
-            fake()->uuid(),
-            new MockServerExpectation('METHOD', '/path')
+        $expectation       = new Expectation(
+            new RequestMatcher\Properties('GET', '/path'),
+            new Action\Response(),
+            id: fake()->uuid(),
         );
 
         $clientMock->allows('put')
             ->once()
-            ->withArgs(
-                [
-                    '/mockserver/verify',
-                    [
-                        'json' => [
-                            'expectationId' => [
-                                'id' => $remoteExpectation->uuid
-                            ],
-                            'times' => [
-                                'atLeast' => 1,
-                                'atMost'  => 1,
-                            ],
-                        ],
-                    ],
-                ]
-            )
+            ->withArgs([
+                '/mockserver/verify',
+                ['json' => [$expectation->verifyFormat()]],
+            ])
             ->andReturn(new Response(202));
 
-        $testConnector->verify($remoteExpectation);
+        $testConnector->verify($expectation);
     }
 );
 
@@ -154,32 +146,23 @@ it(
 
         $atLeast           = fake()->numberBetween(1, 50);
         $atMost            = $atLeast + fake()->numberBetween(1, 50);
-        $remoteExpectation = new RemoteExpectation(
-            fake()->uuid(),
-            new MockServerExpectation('METHOD', '/path', atLeast: $atLeast, atMost: $atMost)
+
+        $expectation       = new Expectation(
+            new RequestMatcher\Properties('GET', '/path'),
+            new Action\Response(),
+            new Times($atLeast, $atMost),
+            id: fake()->uuid(),
         );
 
         $clientMock->allows('put')
             ->once()
-            ->withArgs(
-                [
-                    '/mockserver/verify',
-                    [
-                        'json' => [
-                            'expectationId' => [
-                                'id' => $remoteExpectation->uuid,
-                            ],
-                            'times' => [
-                                'atLeast' => $atLeast,
-                                'atMost'  => $atMost,
-                            ],
-                        ],
-                    ],
-                ]
-            )
+            ->withArgs([
+                '/mockserver/verify',
+                ['json' => [$expectation->verifyFormat()]],
+            ])
             ->andReturn(new Response(202));
 
-        $testConnector->verify($remoteExpectation);
+        $testConnector->verify($expectation);
     }
 );
 
@@ -191,13 +174,12 @@ it(
      */
     function (): void {
         /** @var Client&MockInterface $clientMock */
-        $clientMock        = Mockery::mock(Client::class);
-        $testConnector     = new Connector($clientMock);
+        $clientMock    = Mockery::mock(Client::class);
+        $testConnector = new Connector($clientMock);
 
-
-        $remoteExpectation = new RemoteExpectation(
-            fake()->uuid(),
-            new MockServerExpectation('METHOD', '/path')
+        $expectation   = new Expectation(
+            new RequestMatcher\Properties('GET', '/path'),
+            id: fake()->uuid(),
         );
 
         $body     = 'Request not found exactly 1 times, expected:<{';
@@ -212,27 +194,17 @@ it(
             ->withArgs(
                 [
                     '/mockserver/verify',
-                    [
-                        'json' => [
-                            'expectationId' => [
-                                'id' => $remoteExpectation->uuid,
-                            ],
-                            'times' => [
-                                'atLeast' => 1,
-                                'atMost'  => 1,
-                            ],
-                        ],
-                    ],
+                    ['json' => [$expectation->verifyFormat()]],
                 ]
             )
             ->andReturn($response);
 
-        expect(fn () => $testConnector->verify($remoteExpectation))
+        expect(fn () => $testConnector->verify($expectation))
             ->toThrow(
-                function (UnsuccessfulVerificationException $exception) use ($remoteExpectation, $response): void {
+                function (UnsuccessfulVerificationException $exception) use ($expectation, $response): void {
                     expect($exception->getMessage())
                         ->toBe('Request not found exactly 1 times')
-                        ->and($exception->expectation)->toBe($remoteExpectation)
+                        ->and($exception->expectation)->toBe($expectation)
                         ->and($exception->response)->toBe($response);
                 }
             );
@@ -247,12 +219,12 @@ it(
      */
     function (): void {
         /** @var Client&MockInterface $clientMock */
-        $clientMock        = Mockery::mock(Client::class);
-        $testConnector     = new Connector($clientMock);
+        $clientMock    = Mockery::mock(Client::class);
+        $testConnector = new Connector($clientMock);
 
-        $remoteExpectation = new RemoteExpectation(
-            fake()->uuid(),
-            new MockServerExpectation('METHOD', '/path')
+        $expectation   = new Expectation(
+            new RequestMatcher\Properties('GET', '/path'),
+            id: fake()->uuid(),
         );
 
         $body     = 'Request not found exactly 1 times, expected:<{';
@@ -261,34 +233,24 @@ it(
             headers: ['Content-Length' => (string) strlen($body)],
             body: $body
         );
-        $exception     = new RequestException('Exception', new Request('METHOD', '/path'), $response);
+        $exception     = new RequestException('Exception', new Request('GET', '/path'), $response);
 
         $clientMock->allows('put')
             ->once()
             ->withArgs(
                 [
                     '/mockserver/verify',
-                    [
-                        'json' => [
-                            'expectationId' => [
-                                'id' => $remoteExpectation->uuid,
-                            ],
-                            'times' => [
-                                'atLeast' => 1,
-                                'atMost'  => 1,
-                            ],
-                        ],
-                    ],
+                    ['json' => [$expectation->verifyFormat()]],
                 ]
             )
             ->andThrow($exception);
 
-        expect(fn () => $testConnector->verify($remoteExpectation))
+        expect(fn () => $testConnector->verify($expectation))
             ->toThrow(
-                function (UnsuccessfulVerificationException $exception) use ($remoteExpectation, $response): void {
+                function (UnsuccessfulVerificationException $exception) use ($expectation, $response): void {
                     expect($exception->getMessage())
                         ->toBe('Request not found exactly 1 times')
-                        ->and($exception->expectation)->toBe($remoteExpectation)
+                        ->and($exception->expectation)->toBe($expectation)
                         ->and($exception->response)->toBe($response);
                 }
             );
@@ -306,9 +268,9 @@ it(
         $clientMock        = Mockery::mock(Client::class);
         $testConnector     = new Connector($clientMock);
 
-        $remoteExpectation = new RemoteExpectation(
-            fake()->uuid(),
-            new MockServerExpectation('METHOD', '/path')
+        $expectation = new Expectation(
+            new RequestMatcher\Properties('GET', '/path'),
+            id: fake()->uuid(),
         );
 
         $expectedException = new TransferException();
@@ -318,27 +280,17 @@ it(
             ->withArgs(
                 [
                     '/mockserver/verify',
-                    [
-                        'json' => [
-                            'expectationId' => [
-                                'id' => $remoteExpectation->uuid,
-                            ],
-                            'times' => [
-                                'atLeast' => 1,
-                                'atMost'  => 1,
-                            ],
-                        ],
-                    ],
+                    ['json' => [$expectation->verifyFormat()]],
                 ]
             )
             ->andThrow($expectedException);
 
-        expect(fn () => $testConnector->verify($remoteExpectation))
+        expect(fn () => $testConnector->verify($expectation))
             ->toThrow(
-                function (VerificationFailException $exception) use ($remoteExpectation, $expectedException): void {
+                function (VerificationFailException $exception) use ($expectation, $expectedException): void {
                     expect($exception->getMessage())
                         ->toBe('Fail to check verification for expectation!')
-                        ->and($exception->expectation)->toBe($remoteExpectation)
+                        ->and($exception->expectation)->toBe($expectation)
                         ->and($exception->getPrevious())->toBe($expectedException);
                 }
             );

@@ -7,13 +7,14 @@ use Nivseb\PhpMockServerConnector\Exception\FailCreateExpectationException;
 use Nivseb\PhpMockServerConnector\Exception\MissingServerInitExceptionAbstract;
 use Nivseb\PhpMockServerConnector\Server\MockServer;
 use Nivseb\PhpMockServerConnector\Server\MockServerEndpoint;
+use Nivseb\PhpMockServerConnector\Structs\Expectation;
 use Nivseb\PhpMockServerConnector\Structs\MockServerExpectation;
 
 class PendingExpectation
 {
     protected MockServerExpectation $expectation;
 
-    protected ?RemoteExpectation $remoteExpectation = null;
+    protected ?Expectation $remoteExpectation = null;
 
     public function __construct(
         protected MockServerEndpoint $mockServerEndpoint,
@@ -51,7 +52,7 @@ class PendingExpectation
      *
      * @throws AlreadyExpectedExpectationException
      */
-    public function andReturn(int $statusCode, null|array|string $responseBody = null, ?array $headers = null): static
+    public function andReturn(int $statusCode, array|string $responseBody = '', array $headers = []): static
     {
         if ($this->remoteExpectation) {
             throw new AlreadyExpectedExpectationException($this->remoteExpectation);

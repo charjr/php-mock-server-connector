@@ -2,12 +2,12 @@
 
 namespace Nivseb\PhpMockServerConnector\Exception;
 
-use Nivseb\PhpMockServerConnector\Expectation\RemoteExpectation;
+use Nivseb\PhpMockServerConnector\Structs\Expectation;
 
 class AlreadyExpectedExpectationException extends AbstractMockServerException
 {
     public function __construct(
-        public RemoteExpectation $remoteExpectation
+        public Expectation $expectation,
     ) {
         parent::__construct('Expectation is already applied to the mock server!');
     }

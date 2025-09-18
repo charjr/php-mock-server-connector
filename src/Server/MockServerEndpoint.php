@@ -5,11 +5,11 @@ namespace Nivseb\PhpMockServerConnector\Server;
 use Nivseb\PhpMockServerConnector\Exception\UnsuccessfulVerificationException;
 use Nivseb\PhpMockServerConnector\Exception\VerificationFailException;
 use Nivseb\PhpMockServerConnector\Expectation\PendingExpectation;
-use Nivseb\PhpMockServerConnector\Expectation\RemoteExpectation;
+use Nivseb\PhpMockServerConnector\Structs\Expectation;
 
 class MockServerEndpoint
 {
-    /** @var array<RemoteExpectation> */
+    /** @var array<Expectation> */
     protected array $expectations = [];
 
     public function __construct(
@@ -23,9 +23,9 @@ class MockServerEndpoint
         return new PendingExpectation($this, $method, $url);
     }
 
-    public function registerExpectation(RemoteExpectation $expectation): void
+    public function registerExpectation(Expectation $expectation): void
     {
-        $this->expectations[$expectation->uuid] = $expectation;
+        $this->expectations[$expectation->id] = $expectation;
     }
 
     /**
@@ -36,7 +36,7 @@ class MockServerEndpoint
         return $this->expectations;
     }
 
-    public function getExpectation(string $uuid): ?RemoteExpectation
+    public function getExpectation(string $uuid): ?Expectation
     {
         return $this->expectations[$uuid] ?? null;
     }

@@ -9,9 +9,7 @@ use Nivseb\PhpMockServerConnector\Exception\FailCreateExpectationException;
 use Nivseb\PhpMockServerConnector\Exception\FailResetMockServerException;
 use Nivseb\PhpMockServerConnector\Exception\UnsuccessfulVerificationException;
 use Nivseb\PhpMockServerConnector\Exception\VerificationFailException;
-use Nivseb\PhpMockServerConnector\Expectation\RemoteExpectation;
 use Nivseb\PhpMockServerConnector\Structs\Expectation;
-use Nivseb\PhpMockServerConnector\Structs\MockServerExpectation;
 use Psr\Http\Message\ResponseInterface;
 
 class Connector
@@ -23,7 +21,7 @@ class Connector
 
     public static function fromUrl($mockServerUrl): self
     {
-        return new self(new Client($mockServerUrl));
+        return new self(new Client(['base_uri' => $mockServerUrl]));
     }
 
     /**
@@ -44,56 +42,37 @@ class Connector
     /**
      * @throws FailCreateExpectationException
      */
-    public function applyExpectation(MockServerExpectation|Expectation $expectation): RemoteExpectation
+    public function applyExpectation(Expectation $expectation): Expectation
     {
         try {
             $response = $this->client->put(
                 '/mockserver/expectation',
-                [
-                    'json' => $expectation->jsonSerialize(),
-                ]
-            );
-            if ($response->getStatusCode() !== 201) {
-                throw new FailCreateExpectationException($expectation, $response);
-            }
-
-            return new RemoteExpectation(
-                json_decode($response->getBody()->getContents())[0]->id,
-                $expectation
+                ['json' => $expectation->createFormat()]
             );
         } catch (GuzzleException $exception) {
             throw new FailCreateExpectationException($expectation, previous: $exception);
         }
+
+        if ($response->getStatusCode() !== 201) {
+            throw new FailCreateExpectationException($expectation, $response);
+        }
+
+        $expectation->id ??= json_decode($response->getBody()->getContents())[0]->id;
+
+        return $expectation;
     }
 
     /**
      * @throws UnsuccessfulVerificationException
      * @throws VerificationFailException
      */
-    public function verify(RemoteExpectation $expectation): void
+    public function verify(Expectation $expectation): void
     {
         try {
             $response = $this->client->put(
                 '/mockserver/verify',
-                [
-                    'json' => [
-                        'expectationId' => [
-                            'id' => $expectation->uuid,
-                        ],
-                        'times' => [
-                            'atLeast' => $expectation->expectation->atLeast,
-                            'atMost'  => $expectation->expectation->atMost,
-                        ],
-                    ],
-                ]
+                ['json' => [$expectation->verifyFormat()]],
             );
-            if ($response->getStatusCode() !== 202) {
-                throw new UnsuccessfulVerificationException(
-                    $this->getMessageFromResponse($response),
-                    $expectation,
-                    $response
-                );
-            }
         } catch (GuzzleException $exception) {
             if (!$exception instanceof RequestException) {
                 throw new VerificationFailException($expectation, $exception);
@@ -109,6 +88,14 @@ class Connector
                 $expectation,
                 $response,
                 $exception
+            );
+        }
+
+        if ($response->getStatusCode() !== 202) {
+            throw new UnsuccessfulVerificationException(
+                $this->getMessageFromResponse($response),
+                $expectation,
+                $response
             );
         }
     }

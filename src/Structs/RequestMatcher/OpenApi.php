@@ -20,7 +20,7 @@ final readonly class OpenApi implements RequestMatcher
      *     operationId?: string,
      * }
      */
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         return [
                 'specUrlOrPayload' => $this->specUrlOrPayload,

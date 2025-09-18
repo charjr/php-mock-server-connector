@@ -7,44 +7,12 @@ namespace Nivseb\PhpMockServerConnector\Structs\Action;
 final class Response implements \Nivseb\PhpMockServerConnector\Structs\Action
 {
     public function __construct(
-        private int|string $statusCode = 200,
-        private string $reasonPhrase = '',
-        private array $headers = [],
-        private array $cookies = [],
-        private array|string $body = '',
+        public int|string $statusCode = 200,
+        public string $reasonPhrase = '',
+        public array $headers = [],
+        public array $cookies = [],
+        public array|string $body = '',
     ) {}
-
-    public function withStatusCode(int|string $code): self
-    {
-        $this->statusCode = $code;
-        return $this;
-    }
-
-    public function withReasonPhrase(string $phrase): self
-    {
-        $this->reasonPhrase = $phrase;
-        return $this;
-    }
-
-    /** @param array<string, scalar> $headers */
-    public function withHeaders(array $headers): self
-    {
-        $this->headers = $headers;
-        return $this;
-    }
-
-    /** @param array<string, scalar> $cookies */
-    public function withCookies(array $cookies): self
-    {
-        $this->cookies = $cookies;
-        return $this;
-    }
-
-    public function withBody(array|string $body): self
-    {
-        $this->body = $body;
-        return $this;
-    }
 
     /**
      * @return array{
@@ -67,7 +35,7 @@ final class Response implements \Nivseb\PhpMockServerConnector\Structs\Action
     }
 
     /**
-     * @param array<string, array|bool|float|int|string> $properties
+     * @param array<string, array|scalar> $properties
      */
     private function buildPropertyMatcher(array $properties): array
     {
