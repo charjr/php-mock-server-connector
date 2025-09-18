@@ -51,7 +51,7 @@ class PendingExpectation
      *
      * @throws AlreadyExpectedExpectationException
      */
-    public function andReturn(int $statusCode, null|array|string $responseBody = null, ?array $headers = null): static
+    public function andReturn(int $statusCode, array|string $responseBody = '', array $headers = []): static
     {
         if ($this->remoteExpectation) {
             throw new AlreadyExpectedExpectationException($this->remoteExpectation);

@@ -2,14 +2,14 @@
 
 namespace Nivseb\PhpMockServerConnector\Exception;
 
-use Nivseb\PhpMockServerConnector\Structs\MockServerExpectation;
+use Nivseb\PhpMockServerConnector\Structs\Expectation;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
 class FailCreateExpectationException extends AbstractMockServerException
 {
     public function __construct(
-        public MockServerExpectation $expectation,
+        public Expectation $expectation,
         public ?ResponseInterface $response = null,
         ?Throwable $previous = null
     ) {

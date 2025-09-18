@@ -9,7 +9,6 @@ use Nivseb\PhpMockServerConnector\Exception\UnsuccessfulVerificationException;
 use Nivseb\PhpMockServerConnector\Exception\VerificationFailException;
 use Nivseb\PhpMockServerConnector\Expectation\RemoteExpectation;
 use Nivseb\PhpMockServerConnector\Structs\Expectation;
-use Nivseb\PhpMockServerConnector\Structs\MockServerExpectation;
 
 class MockServer
 {
@@ -69,7 +68,7 @@ class MockServer
      * @throws FailCreateExpectationException
      * @throws MissingServerInitExceptionAbstract
      */
-    public static function applyExpectation(MockServerExpectation|Expectation $expectation): RemoteExpectation
+    public static function applyExpectation(Expectation $expectation): RemoteExpectation
     {
         return static::getConnector()->applyExpectation($expectation);
     }
